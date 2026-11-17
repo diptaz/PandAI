@@ -1,11 +1,10 @@
 <div align="center">
-  <!-- Ganti link gambar ini dengan logo PandAI asli nanti -->
   <img src="https://github.com/user-attachments/assets/6dd06c2b-87bf-476c-8c98-7a8d30b1f81a" alt="PandAI Logo" width="120" height="120">
 
-  <h1 align="center">PandAI: Intelligent Study Planner</h1>
+  <h1 align="center">PandAI - Intelligent Study Planner</h1>
 
   <p align="center">
-    Aplikasi mobile cerdas untuk penjadwalan tugas adaptif dan prediksi durasi belajar mandiri.
+    Adaptive task scheduling and personalized study duration prediction powered by constraint solving and machine learning.
     <br />
     <br />
     <a href="https://github.com/diptaz/PandAI/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
@@ -16,14 +15,13 @@
 
 ---
 
-## Tentang Project
-**PandAI** adalah aplikasi *mobile* berbasis **Expo (React Native)** yang dirancang untuk membantu mahasiswa memecahkan masalah prokrastinasi dan tumpang tindih jadwal. Sistem ini didukung oleh **Back-End NestJS** untuk *constraint-solving* kalender dan **FastAPI Machine Learning** untuk mengkalibrasi estimasi durasi tugas berdasarkan kebiasaan (kecepatan kerja) masing-masing pengguna.
+## Overview
 
-Proyek ini dibangun untuk memenuhi kriteria AoL *Software Engineering* dan *Machine Learning* (COMP6100001).
+**PandAI** is a cross-platform mobile application built with **Expo (React Native)** that eliminates scheduling conflicts and reduces procrastination through automated, adaptive time-blocking.
 
+Under the hood, the platform pairs a **NestJS** backend for constraint-based calendar optimization with a **FastAPI** machine learning service that continuously calibrates task duration estimates based on each user's historical work velocity.
 
-## Built With (Tech Stack)
-Aplikasi ini dikembangkan menggunakan tumpukan teknologi *Latest Stable*:
+## Tech Stack
 
 * [![Expo][Expo-badge]][Expo-url]
 * [![React Native][React-badge]][React-url]
@@ -37,112 +35,126 @@ Aplikasi ini dikembangkan menggunakan tumpukan teknologi *Latest Stable*:
 
 ---
 
-## Menjalankan Aplikasi di Lokal (Docker Ready)
+## Repository Structure
 
-Proyek ini menggunakan konfigurasi *monorepo* ringan yang dibungkus dengan Docker untuk menyelaraskan *environment* seluruh tim.
+```text
+PandAI/
+├── apps/
+│   ├── mobile/  
+│   └── api/       
+├── ml-service/        
+├── .github/
+│   └── workflows/       
+└── docker-compose.yml     
+```
 
-### Prasyarat
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Wajib nyala)
-- Node.js 26 LTS & Python 3.15.2 (Hanya untuk akses *Virtual Environment* lokal jika diperlukan)
-- Expo Go ter-install di HP (iOS/Android)
+---
 
-### Langkah Setup
+## Getting Started
 
-1. **Jalankan Backend & Database via Docker**
-   Dari folder *root* proyek, nyalakan kontainer:
+This repository is structured as a lightweight monorepo containerized with Docker to ensure environment parity across development and testing.
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running)
+- Node.js 26 LTS & Python 3.15.2 *(optional, required only for local virtual environment access outside containers)*
+- Expo Go installed on your iOS or Android device
+
+### Local Setup
+
+1. **Spin up the Backend, ML Service, and Database**
+   From the project root directory, build and start all containerized services:
    ```bash
    docker compose up -d --build
    ```
-   *Layanan yang berjalan:*
-   - `localhost:5432` - PostgreSQL Database
-   - `localhost:8000` - FastAPI ML Service
-   - `localhost:3000` - NestJS Backend (Otomatis terkoneksi ke Postgres & FastAPI)
 
-2. **Jalankan Aplikasi Mobile (Expo)**
-   Buka terminal baru, masuk ke direktori mobile, install dependensi, lalu nyalakan:
+   | Service | Local Endpoint | Description |
+   | :--- | :--- | :--- |
+   | **NestJS API** | `http://localhost:3000` | Core backend & schedule constraint solver |
+   | **FastAPI ML** | `http://localhost:8000` | Task duration prediction & calibration service |
+   | **PostgreSQL** | `localhost:5432` | Primary relational database |
+
+2. **Start the Mobile Client (Expo)**
+   Open a separate terminal, navigate to the mobile workspace, install dependencies, and start the bundler:
    ```bash
    cd apps/mobile
    npm install
    npx expo start -c
    ```
-   *Scan QR Code di terminal menggunakan Expo Go.*
+   Scan the generated QR code in your terminal using **Expo Go**.
 
 ---
 
-## Struktur Monorepo
+## Contributing & Git Workflow
+
+This repository enforces a **strict branching model** and **Pull Request (PR)** review gates. Direct pushes to `main` and `integration/pandai` are restricted.
+
+### Branching Strategy
+- `main` &rarr; Production-ready, stable release branch.
+- `integration/pandai` &rarr; Pre-production integration branch and target for feature PRs; triggers automated QA CI pipelines.
+- `feature/*` &rarr; Scoped development branches (e.g., `feature/front-end`, `feature/back-end`, `feature/ML-Data`).
+
+### Commit Message Convention
+All commits must follow the Conventional Commits format linked to a valid issue key:
 
 ```text
-PandAI/
-├── apps/
-│   ├── mobile/         
-│   └── api/  
-├── ml-service/         
-├── .github/workflows/  
-└── docker-compose.yml 
+<type>(KAN-xx): <concise description>
 ```
+
+| Type | Purpose |
+| :--- | :--- |
+| `feat` | New feature or capability |
+| `fix` | Bug fix |
+| `refactor` | Code restructuring without functional changes |
+| `test` | Adding or updating automated tests |
+| `docs` | Documentation updates |
+
+**Example:** `feat(KAN-26): add regression endpoint for study duration prediction`
 
 ---
 
-## Panduan Kontribusi Tim (Git Workflow)
+## Core Team
 
-Proyek ini menggunakan kebijakan **Strict Branching** dan **Pull Request (PR)**. Dilarang melakukan *push* langsung ke branch `main` atau `integration/pandai`.
-
-### Alur Branching
-- `main` &rarr; Versi final stabil (*Production-ready*).
-- `integration/pandai` &rarr; Target *Pull Request* (PR) untuk penggabungan fitur dan Pengujian Otomatis (QA CI).
-- `feature/*` &rarr; Area kerja harian (contoh: `feature/front-end`, `feature/back-end`, `feature/ML-Data`).
-
-### Konvensi Commit Message
-Gunakan format standar: `type(KAN-xx): deskripsi singkat`
-* `feat:` Fitur baru
-* `fix:` Perbaikan bug
-* `refactor:` Restrukturisasi kode
-* `test:` Penambahan pengujian
-* `docs:` Pembaruan dokumentasi
-
-*Contoh:* `feat(KAN-26): tambah endpoint regresi prediksi durasi`
-
-## Contributors
-
+<div align="center">
 <table>
   <tr>
     <td align="center">
       <a href="https://github.com/diptaz">
-        <img src="https://github.com/diptaz.png" width="80px;" alt="diptaz"/><br />
+        <img src="https://images.weserv.nl/?url=github.com/diptaz.png&w=160&h=160&fit=cover&mask=circle" width="80px;" alt="diptaz"/><br />
         <sub><b>I Gede Wahyu Dipta Pariandika</b></sub>
       </a><br />
       <sub>Product Owner</sub>
     </td>
     <td align="center">
       <a href="https://github.com/MaulidanFazri">
-        <img src="https://github.com/MaulidanFazri.png" width="80px;" alt="MaulidanFazri"/><br />
+        <img src="https://images.weserv.nl/?url=github.com/MaulidanFazri.png&w=160&h=160&fit=cover&mask=circle" width="80px;" alt="MaulidanFazri"/><br />
         <sub><b>Maulidan Fazri</b></sub>
       </a><br />
       <sub>Quality Assurance</sub>
     </td>
-     <td align="center">
+    <td align="center">
       <a href="https://github.com/allanfisthiantara">
-        <img src="https://github.com/allanfisthiantara.png" width="80px;" alt="allanfisthiantara"/><br />
+        <img src="https://images.weserv.nl/?url=github.com/allanfisthiantara.png&w=160&h=160&fit=cover&mask=circle" width="80px;" alt="allanfisthiantara"/><br />
         <sub><b>Bernardus Allan Fisthiantara</b></sub>
       </a><br />
       <sub>ML Engineer</sub>
     </td>
-     <td align="center">
+    <td align="center">
       <a href="https://github.com/FriskaDeviana">
-        <img src="https://github.com/FriskaDeviana.png" width="80px;" alt="FriskaDeviana"/><br />
+        <img src="https://images.weserv.nl/?url=github.com/FriskaDeviana.png&w=160&h=160&fit=cover&mask=circle" width="80px;" alt="FriskaDeviana"/><br />
         <sub><b>Friska Deviana</b></sub>
       </a><br />
       <sub>Frontend Developer</sub>
     </td>
-     <td align="center">
+    <td align="center">
       <a href="https://github.com/AldridgeHanselRobin">
-        <img src="https://github.com/AldridgeHanselRobin.png" width="80px;" alt="AldridgeHanselRobin"/><br />
+        <img src="https://images.weserv.nl/?url=github.com/AldridgeHanselRobin.png&w=160&h=160&fit=cover&mask=circle" width="80px;" alt="AldridgeHanselRobin"/><br />
         <sub><b>Aldridge Hansel Robin</b></sub>
       </a><br />
       <sub>Backend Developer</sub>
     </td>
   </tr>
 </table>
+</div>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [Expo-badge]: https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white
