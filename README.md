@@ -14,7 +14,7 @@
 </div>
 
 ---
-<img width="1568" height="900" alt="PandAI" src="https://github.com/user-attachments/assets/326acba0-e941-4564-8f57-4196a9be0876" />
+<img width="1568" height="900" alt="PandAI" src="https://github.com/user-attachments/assets/6df8b94f-99d3-49b1-99b0-e55f4541a239" />
 
 ---
 
