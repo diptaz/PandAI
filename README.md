@@ -1,198 +1,165 @@
-# PandAI
+<div align="center">
+  <!-- Ganti link gambar ini dengan logo PandAI asli nanti -->
+  <img src="https://github.com/user-attachments/assets/6dd06c2b-87bf-476c-8c98-7a8d30b1f81a" alt="PandAI Logo" width="120" height="120">
 
-Our Member :
-1. 2902726403 - Aldridge Hansel Robin
-2. 2902726422 - Bernardus Allan Fisthiantara
-3. 2902726492 - Friska Deviana
-4. 2902726555 - I Gede Wahyu Dipta Pariandika
-5. 2902726675 - Maulidan Fazri
+  <h1 align="center">PandAI: Intelligent Study Planner</h1>
+
+  <p align="center">
+    Aplikasi mobile cerdas untuk penjadwalan tugas adaptif dan prediksi durasi belajar mandiri.
+    <br />
+    <br />
+    <a href="https://github.com/diptaz/PandAI/issues/new?labels=bug&template=bug_report.md">Report Bug</a>
+    ·
+    <a href="https://github.com/diptaz/PandAI/issues/new?labels=enhancement&template=user_story.md">Request Feature</a>
+  </p>
+</div>
 
 ---
 
 ## Tentang Project
+**PandAI** adalah aplikasi *mobile* berbasis **Expo (React Native)** yang dirancang untuk membantu mahasiswa memecahkan masalah prokrastinasi dan tumpang tindih jadwal. Sistem ini didukung oleh **Back-End NestJS** untuk *constraint-solving* kalender dan **FastAPI Machine Learning** untuk mengkalibrasi estimasi durasi tugas berdasarkan kebiasaan (kecepatan kerja) masing-masing pengguna.
 
-PandAI adalah aplikasi mobile berbasis **Expo (React Native)** yang membantu mahasiswa mengatur tugas dan jadwal belajar. Aplikasi ini didukung **Back-End NestJS** (API, database, perhitungan prioritas, dan penjadwalan) serta **Machine Learning FastAPI** (prediksi durasi tugas). Project ini dikerjakan secara kelompok, jadi semua anggota wajib mengikuti alur branch dan alur Jira di bawah supaya kodenya gak saling bentrok.
+Proyek ini dibangun untuk memenuhi kriteria AoL *Software Engineering* dan *Machine Learning* (COMP6100001).
 
-Board Jira: [pandai6.atlassian.net](https://pandai6.atlassian.net/jira/software/projects/KAN/boards) (project key **KAN**)
 
-## Tim dan Peran
+## Built With (Tech Stack)
+Aplikasi ini dikembangkan menggunakan tumpukan teknologi *Latest Stable*:
 
-| Anggota | Peran | Branch | Label Jira |
-|---|---|---|---|
-| I Gede Wahyu Dipta Pariandika | Product Owner / Project Manager | | |
-| Friska Deviana | Front-End | `feature/front-end` | `fe` |
-| Aldridge Hansel Robin | Back-End | `feature/back-end` | `be` |
-| Bernardus Allan Fisthiantara | Machine Learning | `feature/ML-Data` | `ml` |
-| Maulidan Fazri | Quality Assurance | `integration/pandai` | |
+* [![Expo][Expo-badge]][Expo-url]
+* [![React Native][React-badge]][React-url]
+* [![NestJS][NestJS-badge]][NestJS-url]
+* [![NodeJS][Node-badge]][Node-url]
+* [![FastAPI][FastAPI-badge]][FastAPI-url]
+* [![Python][Python-badge]][Python-url]
+* [![PostgreSQL][Postgres-badge]][Postgres-url]
+* [![Docker][Docker-badge]][Docker-url]
+* [![GitHub Actions][GitHub-badge]][GitHub-url]
 
-Epic dan Story dipegang PO. Subtask di-assign ke anggota sesuai bagiannya.
+---
 
-## Cakupan MVP (target 29 November 2026)
+## Menjalankan Aplikasi di Lokal (Docker Ready)
 
-| ID | Jira | User Story | Epic | Rilis |
-|---|---|---|---|---|
-| US-1 | KAN-55 | Login dan registrasi akun | A | MVP |
-| US-2 | KAN-9 | Input tugas lewat kalimat bebas | A | MVP |
-| US-3 | KAN-10 | Import jadwal kuliah | A | Rilis 2 |
-| US-4 | KAN-11 | Pengaturan waktu aktif | A | MVP |
-| US-5 | KAN-12 | Estimasi durasi tugas | B | MVP (AC 1), Rilis 2 (AC 2) |
-| US-6 | KAN-13 | Prioritas tugas harian | B | MVP |
-| US-7 | KAN-15 | Penjadwalan tugas otomatis | C | MVP |
-| US-8 | KAN-14 | Saran sesi belajar di waktu kosong | B | MVP |
-| US-9 | KAN-16 | Penyesuaian jadwal saat agenda berubah | C | MVP |
-| US-10 | KAN-18 | Pengingat sesi belajar | E | MVP |
-| US-11 | KAN-17 | Konfirmasi hasil sesi belajar | D | MVP (AC 1), Rilis 2 (AC 2 dan 3) |
-| US-12 | KAN-19 | Ringkasan belajar mingguan | D | Rilis 2 |
+Proyek ini menggunakan konfigurasi *monorepo* ringan yang dibungkus dengan Docker untuk menyelaraskan *environment* seluruh tim.
 
-Epic: A. Input dan Import Jadwal/Tugas, B. Prediksi dan Prioritas, C. Penjadwalan Otomatis dan Adaptif, D. Tracking dan Evaluasi Progres, E. Pengingat.
+### Prasyarat
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Wajib nyala)
+- Node.js 26 LTS & Python 3.15.2 (Hanya untuk akses *Virtual Environment* lokal jika diperlukan)
+- Expo Go ter-install di HP (iOS/Android)
 
-Subtask berlabel `mvp` dikerjakan duluan. Subtask Rilis 2 tetap di Backlog sampai MVP selesai.
+### Langkah Setup
 
-## Struktur Branch
+1. **Jalankan Backend & Database via Docker**
+   Dari folder *root* proyek, nyalakan kontainer:
+   ```bash
+   docker compose up -d --build
+   ```
+   *Layanan yang berjalan:*
+   - `localhost:5432` - PostgreSQL Database
+   - `localhost:8000` - FastAPI ML Service
+   - `localhost:3000` - NestJS Backend (Otomatis terkoneksi ke Postgres & FastAPI)
 
-| Branch | Fungsi | Boleh push langsung? |
-|---|---|---|
-| `main` | Versi final yang stabil dan siap dikumpulkan/didemokan | Tidak |
-| `integration/pandai` | Tempat menggabungkan semua fitur dan dites QA | Tidak, lewat Pull Request |
-| `feature/front-end` | Tampilan dan logika aplikasi (Expo / React Native) | Ya, khusus tim front-end |
-| `feature/back-end` | API NestJS, database, dan server | Ya, khusus tim back-end |
-| `feature/ML-Data` | Dataset, model, dan endpoint FastAPI | Ya, khusus tim ML |
+2. **Jalankan Aplikasi Mobile (Expo)**
+   Buka terminal baru, masuk ke direktori mobile, install dependensi, lalu nyalakan:
+   ```bash
+   cd apps/mobile
+   npm install
+   npx expo start -c
+   ```
+   *Scan QR Code di terminal menggunakan Expo Go.*
 
-## Cara Kerja Branch
+---
 
-```
-feature/front-end ─┐
-feature/back-end  ─┼──► integration/pandai ──► main
-feature/ML-Data   ─┘
-   (kerja harian)        (gabung & tes QA)    (versi final)
-```
+## Struktur Monorepo
 
-1. **Kerja di branch `feature/*` masing-masing.** Semua perubahan harian dilakukan di sini, bukan di `main`.
-2. **Kalau subtask sudah jalan**, buat **Pull Request (PR)** dari `feature/*` ke `integration/pandai`.
-3. **Di `integration/pandai`**, semua fitur digabung dan dites QA supaya front-end, back-end, dan ML nyambung.
-4. **Kalau sudah lolos tes dan disetujui PO**, buat PR dari `integration/pandai` ke `main`.
-5. **`main` hanya berisi versi yang sudah dites.** Jangan pernah ngoding langsung di `main`.
-
-## Alur Status Jira
-
-Board pakai Kanban. Status di Jira harus selalu sama dengan kondisi kode di Git.
-
-| Status Jira | Kapan dipindah | Yang memindahkan |
-|---|---|---|
-| Backlog | Belum siap dikerjakan atau bukan cakupan MVP | PO |
-| Ready | Subtask jelas dan siap diambil | PO |
-| Dev In Progress | Mulai ngoding subtask di branch `feature/*` | Developer |
-| Dev Done | PR ke `integration/pandai` sudah dibuat dan di-merge | Developer |
-| Testing In Progress | QA mulai ngetes di `integration/pandai` | QA |
-| Testing Done | Lolos tes. Kalau gagal, balikin ke Dev In Progress dan kasih komentar | QA |
-| Review (UAT) | PO cek hasil sesuai acceptance criteria di Story | PO |
-| Done | Sudah masuk `main` | PO |
-
-Aturan board:
-- Satu orang maksimal pegang **2 subtask** di Dev In Progress sekaligus.
-- Ambil subtask dari kolom Ready, urutkan dari prioritas tertinggi.
-- Kalau ke-block, kasih komentar di subtask dan tag orang yang terkait.
-
-## Alur Kerja Harian
-
-### 1. Pertama kali (clone)
-
-```bash
-git clone https://github.com/diptaz/PandAI.git
-cd PandAI
-```
-
-### 2. Pindah ke branch kerja lo
-
-```bash
-git fetch
-git switch feature/front-end     # ganti sesuai bagian lo
-```
-
-### 3. Ambil subtask di Jira
-
-Pilih subtask lo di kolom **Ready**, pindahkan ke **Dev In Progress**, lalu catat key-nya (misal `KAN-37`).
-
-### 4. Sebelum mulai ngoding, ambil update terbaru
-
-```bash
-git pull
-```
-
-### 5. Simpan pekerjaan (wajib cantumkan key Jira)
-
-```bash
-git add .
-git commit -m "feat(KAN-37): tambah layar login dan register"
-git push
-```
-
-### 6. Update branch lo dengan versi terbaru integration (biar gak conflict)
-
-```bash
-git fetch origin
-git merge origin/integration/pandai
-```
-
-### 7. Buat Pull Request
-
-Buka GitHub, pilih branch lo, klik **Compare & pull request**, set tujuan ke `integration/pandai`.
-
-- Judul PR diawali key Jira, contoh: `KAN-37 Layar login dan register`
-- Di deskripsi, tulis apa yang dikerjakan dan cara ngetesnya.
-- Minta minimal satu anggota lain buat review, lalu pindahkan subtask ke **Dev Done** setelah di-merge.
-
-## Aturan Commit Message
-
-Format: `type(KAN-xx): deskripsi singkat`
-
-| Type | Artinya | Contoh |
-|---|---|---|
-| `feat:` | Fitur baru | `feat(KAN-26): tambah endpoint prediksi durasi` |
-| `fix:` | Perbaikan bug | `fix(KAN-32): jadwal tidak muncul saat slot kosong` |
-| `docs:` | Dokumentasi | `docs: update README` |
-| `data:` | Perubahan dataset/model | `data(KAN-25): tambah dataset durasi tugas` |
-| `refactor:` | Rapikan kode tanpa ubah fungsi | `refactor(KAN-30): pisah komponen kartu tugas` |
-| `test:` | Tambah atau ubah pengujian | `test(KAN-29): uji perhitungan skor prioritas` |
-
-Key Jira boleh dikosongkan hanya untuk perubahan yang tidak terkait subtask, misalnya update README.
-
-## Aturan Tim
-
-- Jangan push langsung ke `main` dan `integration/pandai`.
-- Setiap commit dan PR harus terhubung ke subtask Jira lewat key `KAN-xx`.
-- Jangan ngoding fitur yang belum ada subtask-nya di Jira. Kalau perlu, minta PO bikin dulu.
-- Satu orang mengerjakan satu bagian di branch-nya, supaya conflict minim.
-- Selalu `git pull` sebelum mulai kerja.
-- Commit kecil dan sering, jangan numpuk berhari-hari.
-- Jangan commit `node_modules/`, file `.env`, atau API key.
-- Kalau ada conflict, jangan panik: selesaikan di VS Code, lalu `git add .` dan `git commit`.
-
-## Struktur Folder
-
-```
+```text
 PandAI/
-├── src/                 # kode aplikasi Expo
-├── assets/              # gambar dan ikon
-├── scripts/             # script bantu
-├── datasheet/           # dataset (data.csv)
-├── machine-learning/    # notebook dan model ML (ml.ipynb)
-├── app.json
-├── package.json
-└── README.md
+├── apps/
+│   ├── mobile/         
+│   └── api/  
+├── ml-service/         
+├── .github/workflows/  
+└── docker-compose.yml 
 ```
 
-## Menjalankan Aplikasi
+---
 
-```bash
-npm install
-npx expo start
-```
+## Panduan Kontribusi Tim (Git Workflow)
 
-Scan QR pakai **Expo Go**, atau tekan `a` buat emulator Android, `w` buat web.
+Proyek ini menggunakan kebijakan **Strict Branching** dan **Pull Request (PR)**. Dilarang melakukan *push* langsung ke branch `main` atau `integration/pandai`.
 
-Kalau error aneh:
+### Alur Branching
+- `main` &rarr; Versi final stabil (*Production-ready*).
+- `integration/pandai` &rarr; Target *Pull Request* (PR) untuk penggabungan fitur dan Pengujian Otomatis (QA CI).
+- `feature/*` &rarr; Area kerja harian (contoh: `feature/front-end`, `feature/back-end`, `feature/ML-Data`).
 
-```bash
-npx expo start -c
-```
+### Konvensi Commit Message
+Gunakan format standar: `type(KAN-xx): deskripsi singkat`
+* `feat:` Fitur baru
+* `fix:` Perbaikan bug
+* `refactor:` Restrukturisasi kode
+* `test:` Penambahan pengujian
+* `docs:` Pembaruan dokumentasi
+
+*Contoh:* `feat(KAN-26): tambah endpoint regresi prediksi durasi`
+
+## Contributors
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/diptaz">
+        <img src="https://github.com/diptaz.png" width="80px;" alt="diptaz"/><br />
+        <sub><b>I Gede Wahyu Dipta Pariandika</b></sub>
+      </a><br />
+      <sub>Product Owner</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/MaulidanFazri">
+        <img src="https://github.com/MaulidanFazri.png" width="80px;" alt="MaulidanFazri"/><br />
+        <sub><b>Maulidan Fazri</b></sub>
+      </a><br />
+      <sub>Quality Assurance</sub>
+    </td>
+     <td align="center">
+      <a href="https://github.com/allanfisthiantara">
+        <img src="https://github.com/allanfisthiantara.png" width="80px;" alt="allanfisthiantara"/><br />
+        <sub><b>Bernardus Allan Fisthiantara</b></sub>
+      </a><br />
+      <sub>ML Engineer</sub>
+    </td>
+     <td align="center">
+      <a href="https://github.com/FriskaDeviana">
+        <img src="https://github.com/FriskaDeviana.png" width="80px;" alt="FriskaDeviana"/><br />
+        <sub><b>Friska Deviana</b></sub>
+      </a><br />
+      <sub>Frontend Developer</sub>
+    </td>
+     <td align="center">
+      <a href="https://github.com/AldridgeHanselRobin">
+        <img src="https://github.com/AldridgeHanselRobin.png" width="80px;" alt="AldridgeHanselRobin"/><br />
+        <sub><b>Aldridge Hansel Robin</b></sub>
+      </a><br />
+      <sub>Backend Developer</sub>
+    </td>
+  </tr>
+</table>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[Expo-badge]: https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white
+[Expo-url]: https://expo.dev/
+[React-badge]: https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactnative.dev/
+[NestJS-badge]: https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white
+[NestJS-url]: https://nestjs.com/
+[Node-badge]: https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white
+[Node-url]: https://nodejs.org/
+[FastAPI-badge]: https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi
+[FastAPI-url]: https://fastapi.tiangolo.com/
+[Python-badge]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[Python-url]: https://www.python.org/
+[Postgres-badge]: https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white
+[Postgres-url]: https://www.postgresql.org/
+[Docker-badge]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
+[GitHub-badge]: https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white
+[GitHub-url]: https://github.com/features/actions
