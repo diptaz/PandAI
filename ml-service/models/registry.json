@@ -1,0 +1,49 @@
+{
+  "aktif": "v2",
+  "versi": {
+    "v1": {
+      "file": "pandai_model_v1.pkl",
+      "sha256": "f450157976602fe99a4833a330743577e87de7a8d92c87a16a82d748786c4d3d",
+      "nama": "v1-coldstart-sip",
+      "dilatih_pada": "2026-11-17T15:15:05",
+      "didaftarkan_pada": "2026-11-18T08:15:26",
+      "sklearn": "1.9.1",
+      "hyperparameter": {
+        "learning_rate": 0.05,
+        "max_depth": 4,
+        "min_samples_leaf": 30,
+        "n_estimators": 100
+      },
+      "evaluasi_test": {
+        "MAE_jam": 1.885,
+        "RMSE_jam": 4.22,
+        "R2": 0.513,
+        "cakupan_rentang_persen": 78.7
+      },
+      "evaluasi_cv_mae": null,
+      "catatan": "GradientBoosting, target log, loss squared_error (cold start SiP)"
+    },
+    "v2": {
+      "file": "pandai_model_v2.pkl",
+      "sha256": "6d37465fc666221ffe8a8cdc7692b4375c536f2e528af4c9d8d05403d734ff0a",
+      "nama": "v2-hgb-mono-mae",
+      "dilatih_pada": "2026-11-18T08:27:17",
+      "didaftarkan_pada": "2026-11-18T08:27:17",
+      "sklearn": "1.9.1",
+      "hyperparameter": {
+        "learning_rate": 0.1,
+        "max_iter": 400,
+        "max_leaf_nodes": 31,
+        "min_samples_leaf": 10
+      },
+      "evaluasi_test": {
+        "MAE_jam": 1.809,
+        "RMSE_jam": 3.985,
+        "R2": 0.566,
+        "cakupan_rentang_persen": 82.0
+      },
+      "evaluasi_cv_mae": 2.042,
+      "catatan": "HistGB monotonic + loss absolute_error + size_pct tanpa leakage + rentang CQR"
+    }
+  }
+}
