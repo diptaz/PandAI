@@ -27,7 +27,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      MODEL_PATH: "./models/pandai_model.pkl"
+      MODEL_DIR: "./models"
+      # MODEL_VERSION: "v1"   # opsional: paksa versi tertentu (default = "aktif" di registry.json)
       MAX_LATENCY_MS: "100"
 
   backend:

@@ -1,9 +1,11 @@
 # ==========================================
 # 1. Core Classical ML & Data Processing (Wajib AoL ML)
 # ==========================================
-numpy>=2.0.0,<3.0.0
-pandas>=3.0.0,<4.0.0
-scikit-learn>=1.8.0,<2.0.0
+numpy==2.5.5
+pandas==3.1.1
+# Dikunci sama persis dengan versi saat training (lihat metadata model).
+# Model .pkl hanya aman dimuat dengan versi scikit-learn yang sama.
+scikit-learn==1.9.1
 joblib>=1.4.0,<2.0.0
 
 # ==========================================
