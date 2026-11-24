@@ -21,9 +21,12 @@ def body(size=10, type="laporan", course_mastery=3):
 
 
 def test_health(client):
-    res = client.get("/health")
+    res = client.get("/ml/health")
     assert res.status_code == 200
-    assert res.json()["status"] == "ok"
+    data = res.json()
+    assert data["status"] == "ok"
+    assert data["model_loaded"] is True
+    assert "model_version" in data
 
 
 def test_contoh_dari_kontrak(client):
@@ -60,8 +63,27 @@ def test_tugas_lebih_besar_tidak_lebih_cepat(client):
     assert besar["estimated_duration_hours"] >= kecil["estimated_duration_hours"]
 
 
+@pytest.mark.parametrize("alias, tipe_model", [
+    ("esai", "laporan"), ("Makalah", "laporan"), ("PPT", "presentasi"), ("UTS", "praktikum"),
+])
+def test_alias_type_sama_dengan_type_model(client, alias, tipe_model):
+    a = client.post("/ml/predict-duration", json=body(size=5, type=alias))
+    b = client.post("/ml/predict-duration", json=body(size=5, type=tipe_model))
+    assert a.status_code == 200
+    assert a.json()["estimated_duration_hours"] == b.json()["estimated_duration_hours"]
+
+
+def test_type_tidak_dikenal_pakai_fallback(client):
+    res = client.post("/ml/predict-duration", json=body(type="bikin video"))
+    assert res.status_code == 200
+    factors = res.json()["factors"]
+    assert len(factors) == 3
+    assert "belum dikenal" in factors[-1]
+
+
 @pytest.mark.parametrize("features", [
-    {"size": 10, "type": "esai", "course_mastery": 3},      # type di luar daftar
+    {"size": 10, "type": "   ", "course_mastery": 3},       # type kosong
+    {"size": 10, "type": "x" * 51, "course_mastery": 3},    # type terlalu panjang
     {"size": 0, "type": "laporan", "course_mastery": 3},    # size harus > 0
     {"size": -5, "type": "laporan", "course_mastery": 3},
     {"size": 10, "type": "laporan", "course_mastery": 0},   # mastery 1-5

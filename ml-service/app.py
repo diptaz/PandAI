@@ -1,7 +1,7 @@
 """PandAI ML Service: estimasi durasi pengerjaan tugas.
 
 Endpoint:
-    GET  /health               -> cek server dan model siap
+    GET  /ml/health            -> cek server dan model siap
     POST /ml/predict-duration  -> estimasi durasi (jam), rentang min-max, dan faktor
 
 Model dilatih di machine-learning/ml.ipynb (KAN-25) lalu disimpan per versi
@@ -17,7 +17,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Literal
 
 import joblib
 import numpy as np
@@ -45,6 +44,36 @@ def muat_model() -> tuple[str, dict]:
 # tugas kuliah), di atas 0.95 kurva model mulai tidak stabil karena data tipis.
 PCT_BAWAH, PCT_ATAS = 0.20, 0.95
 
+# ---------- Pemetaan type ----------
+# Model hanya dilatih dengan 4 type (hasil pemetaan SubCategory SiP di ml.ipynb).
+# Type lain dari BE dipetakan ke type model yang cara kerjanya paling mirip.
+# Satuan size mengikuti type tujuan: laporan=halaman, presentasi=slide,
+# coding=soal, praktikum=modul/bab.
+TYPE_MODEL = ("laporan", "coding", "presentasi", "praktikum")
+ALIAS_TYPE = {
+    # tugas tulis -> laporan (halaman)
+    "esai": "laporan", "essay": "laporan", "makalah": "laporan", "paper": "laporan",
+    "artikel": "laporan", "proposal": "laporan", "resume": "laporan", "rangkuman": "laporan",
+    # tugas slide -> presentasi (slide)
+    "ppt": "presentasi", "slide": "presentasi", "pitching": "presentasi",
+    # tugas program -> coding (soal)
+    "program": "coding", "pemrograman": "coding",
+    # latihan & persiapan ujian -> praktikum (modul/bab)  [ASUMSI, belum ada di data latih]
+    "lab": "praktikum", "latihan": "praktikum", "kuis": "praktikum", "quiz": "praktikum",
+    "ujian": "praktikum", "uts": "praktikum", "uas": "praktikum",
+}
+TYPE_DEFAULT = "laporan"  # fallback untuk type yang belum dikenal
+
+
+def petakan_type(tipe: str) -> tuple[str, bool]:
+    """Kembalikan (type_model, dikenali). Type tak dikenal tidak ditolak, tapi pakai fallback."""
+    if tipe in TYPE_MODEL:
+        return tipe, True
+    if tipe in ALIAS_TYPE:
+        return ALIAS_TYPE[tipe], True
+    return TYPE_DEFAULT, False
+
+
 LABEL_PEMAHAMAN = {1: "sangat rendah", 2: "rendah", 3: "sedang", 4: "baik", 5: "sangat baik"}
 
 # Model dimuat SEKALI saat server menyala, bukan setiap request
@@ -57,7 +86,8 @@ app = FastAPI(title="PandAI ML Service", version="1.0.0")
 
 class Features(BaseModel):
     size: float = Field(..., gt=0, description="Jumlah satuan tugas, mis. 10 (halaman)")
-    type: Literal["laporan", "coding", "presentasi", "praktikum"]
+    type: str = Field(..., min_length=1, max_length=50,
+                      description="Jenis tugas, mis. laporan / esai / kuis")
     course_mastery: int = Field(..., ge=1, le=5, description="Pemahaman matkul 1-5")
 
     @field_validator("type", mode="before")
@@ -119,12 +149,21 @@ def prediksi(tipe: str, size: float, course_mastery: int) -> dict:
 
 # ---------- Endpoint ----------
 
-@app.get("/health")
+@app.get("/ml/health")
 def health():
-    return {"status": "ok", "model_version": VERSI_AKTIF, "model_name": paket["metadata"]["versi"]}
+    return {
+        "status": "ok",
+        "model_loaded": paket is not None,
+        "model_version": VERSI_AKTIF,
+        "model_name": paket["metadata"]["versi"],
+    }
 
 
 @app.post("/ml/predict-duration", response_model=PredictResponse)
 def predict_duration(req: PredictRequest):
     f = req.features
-    return prediksi(f.type, f.size, f.course_mastery)
+    tipe, dikenali = petakan_type(f.type)
+    hasil = prediksi(tipe, f.size, f.course_mastery)
+    if not dikenali:
+        hasil["factors"].append(f"Tipe tugas '{f.type}' belum dikenal, diestimasi seperti {tipe}")
+    return hasil
