@@ -2,11 +2,11 @@ name: pandai-ml
 channels:
   - conda-forge
 dependencies:
-  - python=3.11
+  - python=3.15.2
   # --- Analisis data & training model ---
   - pandas
   - numpy
-  - scikit-learn
+  - scikit-learn=1.9.1
   - matplotlib
   - seaborn
   - jupyter
@@ -15,3 +15,6 @@ dependencies:
   # --- Serving model (MLOps) ---
   - fastapi
   - uvicorn
+  # --- Testing ---
+  - pytest
+  - httpx
