@@ -13,12 +13,26 @@ export class UsersService {
             throw new BadRequestException(['Maksimal mata kuliah yang diizinkan adalah 20']);
         }
 
-        // Validasi 2: Confidence level harus antara 1 dan 5
-        if (courses) {
+        // Validasi 2: Confidence level (1-5) & keunikan nama course di dalam input
+        if (courses && courses.length > 0) {
+            const seenCourseNames = new Set<string>();
+
             for (const course of courses) {
                 if (course.confidence_level < 1 || course.confidence_level > 5) {
                     throw new BadRequestException(['confidence_level harus berada di antara 1 dan 5']);
                 }
+
+                const normalizedName = course.course_name?.trim().toLowerCase();
+                if (!normalizedName) {
+                    throw new BadRequestException(['Nama mata kuliah tidak boleh kosong']);
+                }
+
+                if (seenCourseNames.has(normalizedName)) {
+                    throw new BadRequestException([
+                        `Nama mata kuliah "${course.course_name}" tidak boleh duplikat dalam input`,
+                    ]);
+                }
+                seenCourseNames.add(normalizedName);
             }
         }
 
@@ -42,12 +56,31 @@ export class UsersService {
                 },
             });
 
-            // 2. Insert Courses
+            // 2. Validasi DB & Insert Courses
             let savedCourses: { id: string; name: string }[] = [];
             if (courses && courses.length > 0) {
+                // Cek apakah nama course sudah pernah tersimpan di DB untuk user ini
+                const existingCourses = await prisma.course.findMany({
+                    where: { user_id: userId },
+                    select: { name: true },
+                });
+
+                const existingNames = new Set(
+                    existingCourses.map((c) => c.name.trim().toLowerCase())
+                );
+
+                for (const course of courses) {
+                    const normalizedName = course.course_name.trim().toLowerCase();
+                    if (existingNames.has(normalizedName)) {
+                        throw new BadRequestException([
+                            `Mata kuliah "${course.course_name}" sudah terdaftar sebelumnya`,
+                        ]);
+                    }
+                }
+
                 const courseData = courses.map((c: any) => ({
                     user_id: userId,
-                    name: c.course_name,
+                    name: c.course_name.trim(),
                     confidence_level: c.confidence_level,
                 }));
                 await prisma.course.createMany({ data: courseData });
@@ -55,7 +88,7 @@ export class UsersService {
                 // Ambil data course yang baru dibuat untuk response
                 savedCourses = await prisma.course.findMany({
                     where: { user_id: userId },
-                    select: { id: true, name: true }
+                    select: { id: true, name: true },
                 });
             }
 
