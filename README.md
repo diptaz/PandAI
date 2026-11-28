@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/6dd06c2b-87bf-476c-8c98-7a8d30b1f81a" alt="PandAI Logo" width="120" height="120">
+  <img src="https://github.com/user-attachments/assets/49bda70e-67fc-463a-bfd3-4375d992967e" alt="PandAI Logo" width="120" height="120">
 
   <h1 align="center">PandAI - Intelligent Study Planner</h1>
 
@@ -14,7 +14,7 @@
 </div>
 
 ---
-<img width="1568" height="900" alt="PandAI" src="https://github.com/user-attachments/assets/6df8b94f-99d3-49b1-99b0-e55f4541a239" />
+<img width="1568" height="900" alt="PandAI" src="https://github.com/user-attachments/assets/75e1d7d1-b5d8-427a-b192-c666d4f077fa" />
 
 ---
 
