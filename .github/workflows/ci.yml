@@ -1,0 +1,279 @@
+name: PandAI CI
+
+on:
+  pull_request:
+    branches:
+      - integration/pandai
+      - main
+  push:
+    branches:
+      - integration/pandai
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # 1. Path Filtering (Aman untuk Branch Protection — tanpa top-level paths)
+  # ============================================================================
+  changes:
+    name: Detect Changed Paths
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      ml: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.ml == 'true' || steps.filter.outputs.contracts == 'true' || steps.filter.outputs.ci == 'true' }}
+      backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.contracts == 'true' || steps.filter.outputs.ci == 'true' }}
+      mobile: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.mobile == 'true' || steps.filter.outputs.ci == 'true' }}
+      contracts: ${{ steps.filter.outputs.contracts == 'true' }}
+      ci: ${{ steps.filter.outputs.ci == 'true' }}
+    steps:
+      - name: Checkout repository for push diff
+        if: github.event_name == 'push'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed paths
+        if: github.event_name != 'workflow_dispatch'
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            ml:
+              - 'ml-service/**'
+              - 'docker-compose.yml'
+            backend:
+              - 'apps/api/**'
+              - 'docker-compose.yml'
+            mobile:
+              - 'apps/mobile/**'
+            contracts:
+              - 'contracts/**'
+              - 'ml-service/tests/test_predict_contract.py'
+              - 'docs/API_CONTRACT.md'
+            ci:
+              - '.github/workflows/ci.yml'
+
+  # ============================================================================
+  # 2. ML Service CI — FastAPI + Scikit-learn (Standalone Docker, tanpa DB)
+  #    Mencakup 30 contract & unit tests di ml-service/tests/test_predict_contract.py
+  # ============================================================================
+  ml-service-ci:
+    name: ML Service CI
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.ml == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Audit forbidden AutoML libraries & pinned core dependencies (NFR-COM-01)
+        run: |
+          if grep -vE '^[[:space:]]*(#|$)' ml-service/requirements.txt | grep -iE 'pycaret|auto-sklearn|autosklearn|lazypredict|tpot|flaml|autogluon|h2o|auto-keras|autokeras'; then
+            echo "::error::Forbidden AutoML library detected in ml-service/requirements.txt (violates NFR-COM-01)."
+            exit 1
+          fi
+
+          for pkg in numpy pandas scikit-learn; do
+            if ! grep -Eq "^${pkg}==[0-9]" ml-service/requirements.txt; then
+              echo "::error::Core ML dependency '${pkg}' must be strictly pinned (==) in ml-service/requirements.txt."
+              exit 1
+            fi
+          done
+
+          echo "OK: 0% AutoML libraries and core ML dependencies are strictly pinned."
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build ML service Docker image (Python 3.15.2-slim)
+        uses: docker/build-push-action@v7
+        with:
+          context: ./ml-service
+          file: ./ml-service/Dockerfile
+          load: true
+          tags: pandai-ml-service:ci
+          cache-from: type=gha,scope=ml-service
+          cache-to: type=gha,mode=max,scope=ml-service,ignore-error=true
+
+      - name: Run contract & unit tests inside container (pytest + coverage)
+        run: |
+          docker run --rm pandai-ml-service:ci \
+            pytest -v --cov=. --cov-report=term-missing
+
+  # ============================================================================
+  # 3. Backend CI — NestJS 12 (Shift Left: Static Analysis -> Build -> Mock Tests)
+  #    Tanpa PostgreSQL container: unit & contract test berjalan berbasis mock
+  # ============================================================================
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    defaults:
+      run:
+        working-directory: ./apps/api
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js 26 LTS
+        uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          cache: "npm"
+          cache-dependency-path: "apps/api/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client (when schema exists)
+        run: |
+          if [ -f prisma/schema.prisma ]; then
+            npx prisma generate
+          else
+            echo "Skipping Prisma generate: prisma/schema.prisma not present yet."
+          fi
+
+      - name: Lint (Oxlint type-aware)
+        run: npm run lint
+
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+
+      - name: Build NestJS application
+        run: npm run build
+
+      - name: Run unit & contract tests with coverage (mock-based, no DB)
+        run: npm run test:cov
+
+  # ============================================================================
+  # 4. Mobile CI — Expo / React Native (Static Analysis & Unit Tests Only)
+  #    TANPA EAS build dan TANPA native Android/iOS build
+  # ============================================================================
+  mobile-ci:
+    name: Mobile CI
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    defaults:
+      run:
+        working-directory: ./apps/mobile
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js 26 LTS
+        uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          cache: "npm"
+          cache-dependency-path: "apps/mobile/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Expo app configuration
+        env:
+          EXPO_NO_TELEMETRY: "1"
+        run: npx expo config --json > /dev/null
+
+      - name: Lint (when configured)
+        run: |
+          if node -e "const p = JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')); process.exit(p.scripts?.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "::notice title=Mobile Lint Skipped::Script 'lint' belum dikonfigurasi di apps/mobile/package.json."
+          fi
+
+      - name: TypeScript typecheck (when configured)
+        run: |
+          if node -e "const p = JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')); process.exit(p.scripts?.typecheck ? 0 : 1)"; then
+            npm run typecheck
+          elif [ -f tsconfig.json ]; then
+            npx tsc --noEmit
+          else
+            echo "::notice title=Mobile Typecheck Skipped::apps/mobile belum memiliki tsconfig.json atau script 'typecheck' (masih berbasis JS)."
+          fi
+
+      - name: Unit tests (when configured)
+        run: |
+          if node -e "const p = JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')); const t = p.scripts?.test || ''; process.exit(t && !t.includes('no test specified') ? 0 : 1)"; then
+            CI=true npm test
+          else
+            echo "::notice title=Mobile Unit Tests Skipped::Script 'test' belum dikonfigurasi di apps/mobile/package.json."
+          fi
+
+  # ============================================================================
+  # 5. Single Quality Gate — Satu-satunya Required Status Check di Branch Protection
+  # ============================================================================
+  ci-quality-gate:
+    name: ci-quality-gate
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    needs:
+      - changes
+      - ml-service-ci
+      - backend-ci
+      - mobile-ci
+    if: always()
+    steps:
+      - name: Evaluate CI job results
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          ML_RESULT: ${{ needs.ml-service-ci.result }}
+          BACKEND_RESULT: ${{ needs.backend-ci.result }}
+          MOBILE_RESULT: ${{ needs.mobile-ci.result }}
+        run: |
+          {
+            echo "## PandAI CI Quality Gate Summary"
+            echo ""
+            echo "| Job | Result |"
+            echo "| :--- | :--- |"
+            echo "| \`changes\` | \`${CHANGES_RESULT}\` |"
+            echo "| \`ml-service-ci\` | \`${ML_RESULT}\` |"
+            echo "| \`backend-ci\` | \`${BACKEND_RESULT}\` |"
+            echo "| \`mobile-ci\` | \`${MOBILE_RESULT}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "changes=${CHANGES_RESULT}"
+          echo "ml-service-ci=${ML_RESULT}"
+          echo "backend-ci=${BACKEND_RESULT}"
+          echo "mobile-ci=${MOBILE_RESULT}"
+
+          if [ "${CHANGES_RESULT}" != "success" ]; then
+            echo "::error::Job 'changes' did not succeed (status: ${CHANGES_RESULT})."
+            exit 1
+          fi
+
+          FAILED=0
+          for entry in "ml-service-ci:${ML_RESULT}" "backend-ci:${BACKEND_RESULT}" "mobile-ci:${MOBILE_RESULT}"; do
+            job="${entry%%:*}"
+            result="${entry#*:}"
+            if [ "${result}" = "failure" ] || [ "${result}" = "cancelled" ]; then
+              echo "::error::Job '${job}' ended with status '${result}'."
+              FAILED=1
+            elif [ "${result}" != "success" ] && [ "${result}" != "skipped" ]; then
+              echo "::error::Job '${job}' ended with unexpected status '${result}'."
+              FAILED=1
+            fi
+          done
+
+          if [ "${FAILED}" -ne 0 ]; then
+            echo "Quality Gate FAILED."
+            exit 1
+          fi
+
+          echo "Quality Gate PASSED: all required checks succeeded or were safely skipped."

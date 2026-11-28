@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "skills": {
+    "api-testing": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-types/api-testing/SKILL.md",
+      "computedHash": "5a3191354e5b7e41717d58127fb150b29edbfb28182d1c8b8ce0bcd8ece3bb45"
+    },
+    "change-to-regression": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-workflows/change-to-regression/SKILL.md",
+      "computedHash": "ea1cceea1c7aed972f224ac1475d1bed985831a490cb741f990a4f821fef5fa6"
+    },
+    "ci-cd-and-automation": {
+      "source": "addyosmani/agent-skills",
+      "commit": "e997ac5b9a74eab332d5e9793bb38a38c8cfdd74",
+      "sourceType": "github",
+      "skillPath": "skills/ci-cd-and-automation/SKILL.md",
+      "computedHash": "307f1eeee27c29693dd6b229b1706f6a867eef5a7f381d4d6f06736a4c230576"
+    },
+    "ci-test-optimization": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-types/ci-test-optimization/SKILL.md",
+      "computedHash": "666c1798107518ba09d2eb3d3e7a97fc529701cf5a4857c7bf71daea1f9c50c3"
+    },
+    "pr-quality-review": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-workflows/pr-quality-review/SKILL.md",
+      "computedHash": "2f4052b6b55fd23338d276028c3ffacdce57b1720add3bcc36e0a16a2eafb864"
+    },
+    "quality-gate-design": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-types/quality-gate-design/SKILL.md",
+      "computedHash": "f375a51e2c3513482e1a55f3fb51e1b3342d1cf8fb8bab01223efe727633733c"
+    },
+    "test-case-writing": {
+      "source": "naodeng/awesome-qa-skills",
+      "commit": "ef0214230fae2d93ba160ecd0b8784b941dfe95a",
+      "sourceType": "github",
+      "skillPath": "skills/en/testing-types/test-case-writing/SKILL.md",
+      "computedHash": "03bee0e005038ec38451bf7a0e7af21ffbdfbd0fd371273a02132896f1a10b69"
+    }
+  }
+}
